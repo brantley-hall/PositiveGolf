@@ -154,6 +154,10 @@
                         <button class="minus-btn ${hole.putting.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'putting', 'minus')">-${hole.putting.minus}</button>
                     </div>
                 </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-success" onclick="enterHole(${hole.number})">Enter Hole ${hole.number}</button>
+                </div>
             `;
             
             container.appendChild(holeDiv);
@@ -174,6 +178,22 @@
                 hole[shotType][direction]++;
                 renderHole(hole);
                 saveData();
+            }
+        }
+
+        function enterHole(holeNumber) {
+            // Mark hole as entered and move to next hole
+            const holeIndex = holes.findIndex(h => h.number === holeNumber);
+            if (holeIndex >= 0) {
+                // Move to next hole or create new one
+                if (holeIndex < holes.length - 1) {
+                    currentHoleIndex = holeIndex + 1;
+                } else {
+                    addHole();
+                }
+                renderCurrentHole();
+                updateNavigation();
+                scrollToCurrentHole();
             }
         }
 
