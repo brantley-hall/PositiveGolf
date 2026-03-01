@@ -391,26 +391,36 @@
         }
 
         function loadSavedData() {
-            const saved = localStorage.getItem('golfTrackerData');
-            if (saved) {
-                const data = JSON.parse(saved);
-                document.getElementById('courseName').value = data.course || '';
-                document.getElementById('roundDate').value = data.date || '';
-                holes = data.holes || [];
-                
-                // Set current hole to the last one or first if none exist
-                currentHoleIndex = holes.length > 0 ? holes.length - 1 : 0;
-                
-                // Show only the current hole
-                if (holes.length > 0) {
-                    renderCurrentHole();
+            try {
+                const saved = localStorage.getItem('golfTrackerData');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    document.getElementById('courseName').value = data.course || '';
+                    document.getElementById('roundDate').value = data.date || '';
+                    holes = data.holes || [];
+                    
+                    // Set current hole to the last one or first if none exist
+                    currentHoleIndex = holes.length > 0 ? holes.length - 1 : 0;
+                    
+                    // Show only the current hole
+                    if (holes.length > 0) {
+                        renderCurrentHole();
+                    }
+                    
+                    // Update hole counter
+                    holes.forEach(hole => {
+                        holeCounter = Math.max(holeCounter, hole.number);
+                    });
+                    
+                    updateNavigation();
                 }
-                
-                // Update hole counter
-                holes.forEach(hole => {
-                    holeCounter = Math.max(holeCounter, hole.number);
-                });
-                
+            } catch (error) {
+                console.error('Error loading saved data:', error);
+                // Clear corrupted data
+                localStorage.removeItem('golfTrackerData');
+                holes = [];
+                holeCounter = 0;
+                currentHoleIndex = 0;
                 updateNavigation();
             }
         }
