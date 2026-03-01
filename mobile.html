@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Strokes Gained - Mobile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 10px; background: #f5f5f5; }
+        .container { max-width: 380px; margin: 0 auto; }
+        .header { background: #1a1a1a; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        .section { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border: 2px solid #ddd; }
+        .shot-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 8px 0; }
+        .header-row { background: #333; color: white; padding: 8px; border-radius: 4px; text-align: center; font-weight: bold; }
+        .sg-positive { background: #10b981; color: white; border: none; padding: 8px 4px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .sg-negative { background: #ef4444; color: white; border: none; padding: 8px 4px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .sg-neutral { background: #6b7280; color: white; border: none; padding: 8px 4px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .sg-positive.active { background: #10b981; color: white; border-color: #10b981; }
+        .sg-negative.active { background: #ef4444; color: white; border-color: #ef4444; }
+        .sg-neutral.active { background: #6b7280; color: white; border-color: #6b7280; }
+        .input-field { padding: 6px; border: 1px solid #ddd; border-radius: 4px; margin: 3px; width: 100%; box-sizing: border-box; font-size: 14px; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin: 3px; font-size: 12px; }
+        .btn:hover { background: #2563eb; }
+        .btn:active { background: #1d4ed8; transform: scale(0.95); }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-success:active { background: #047857; transform: scale(0.95); }
+        .sg-display { font-size: 14px; font-weight: bold; text-align: center; padding: 5px; }
+        .sg-display.positive { color: #10b981; }
+        .sg-display.negative { color: #ef4444; }
+        .sg-display.neutral { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛳ Strokes Gained</h1>
+            <p>Mobile Tracker</p>
+        </div>
+
+        <!-- Round Setup -->
+        <div class="section">
+            <h3>Round Setup</h3>
+            <input type="text" id="courseName" placeholder="Course Name" class="input-field">
+            <input type="date" id="roundDate" class="input-field">
+            <input type="number" id="handicapIndex" placeholder="Handicap Index" step="0.1" class="input-field">
+        </div>
+
+        <!-- Current Hole -->
+        <div class="section">
+            <h3>Hole <span id="currentHole">1</span></h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                <input type="number" id="holePar" placeholder="Par" class="input-field">
+                <input type="number" id="holeYardage" placeholder="Yards" class="input-field">
+                <input type="number" id="holeScore" placeholder="Score" class="input-field">
+            </div>
+        </div>
+
+        <!-- Strokes Gained Categories -->
+        <div class="section">
+            <h3>Strokes Gained</h3>
+            
+            <div class="shot-grid">
+                <div class="header-row">Off the Tee</div>
+                <div class="sg-display" id="sgOffTeeDisplay">0.00</div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Approach</div>
+                <div class="sg-display" id="sgApproachDisplay">0.00</div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Around Green</div>
+                <div class="sg-display" id="sgAroundDisplay">0.00</div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Putting</div>
+                <div class="sg-display" id="sgPuttingDisplay">0.00</div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Total SG</div>
+                <div class="sg-display" id="sgTotalDisplay">0.00</div>
+            </div>
+        </div>
+
+        <!-- Shot Details -->
+        <div class="section">
+            <h3>Shot Details</h3>
+            
+            <div class="shot-grid">
+                <div class="header-row">Driving</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                    <input type="number" id="drivingDistance" placeholder="Distance" class="input-field">
+                    <select id="fairwayHit" class="input-field">
+                        <option value="">Fairway</option>
+                        <option value="hit">Hit</option>
+                        <option value="miss">Miss</option>
+                        <option value="na">N/A</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Approach</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                    <input type="number" id="proximity" placeholder="Proximity" step="0.1" class="input-field">
+                    <select id="gir" class="input-field">
+                        <option value="">GIR</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Short Game</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                    <select id="startingPosition" class="input-field">
+                        <option value="">Position</option>
+                        <option value="fairway">Fairway</option>
+                        <option value="rough">Rough</option>
+                        <option value="sand">Sand</option>
+                        <option value="recovery">Recovery</option>
+                    </select>
+                    <select id="upAndDown" class="input-field">
+                        <option value="">Up/Down</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="na">N/A</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="shot-grid">
+                <div class="header-row">Putting</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                    <input type="number" id="firstPuttDistance" placeholder="1st Putt" step="0.1" class="input-field">
+                    <input type="number" id="totalPutts" placeholder="Total Putts" class="input-field">
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="section">
+            <div style="text-align: center;">
+                <button onclick="saveHole()" class="btn btn-success">Save Hole</button>
+                <button onclick="nextHole()" class="btn">Next Hole</button>
+                <button onclick="clearHole()" class="btn">Clear</button>
+                <button onclick="finishRound()" class="btn">Finish Round</button>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <button onclick="exportData()" class="btn">Export CSV</button>
+                <button onclick="viewSummary()" class="btn">View Summary</button>
+            </div>
+        </div>
+
+        <!-- Round Summary (Hidden by default) -->
+        <div id="summarySection" class="section" style="display: none;">
+            <h3>Round Summary</h3>
+            <div id="summaryContent"></div>
+            <button onclick="hideSummary()" class="btn">Back to Entry</button>
+        </div>
+    </div>
+
+    <script>
+        let currentRound = {
+            course: '',
+            date: '',
+            handicapIndex: 0,
+            holes: []
+        };
+        let currentHoleNum = 1;
+
+        // Initialize
+        window.onload = function() {
+            document.getElementById('roundDate').valueAsDate = new Date();
+            loadSavedData();
+            updateHoleDisplay();
+        };
+
+        function updateHoleDisplay() {
+            document.getElementById('currentHole').textContent = currentHoleNum;
+        }
+
+        function calculateStrokesGained() {
+            const par = parseInt(document.getElementById('holePar').value) || 4;
+            const score = parseInt(document.getElementById('holeScore').value) || 4;
+            const yardage = parseInt(document.getElementById('holeYardage').value) || 400;
+            const drivingDistance = parseInt(document.getElementById('drivingDistance').value) || 0;
+            const fairwayHit = document.getElementById('fairwayHit').value;
+            const proximity = parseFloat(document.getElementById('proximity').value) || 0;
+            const gir = document.getElementById('gir').value;
+            const startingPosition = document.getElementById('startingPosition').value;
+            const upAndDown = document.getElementById('upAndDown').value;
+            const firstPuttDistance = parseFloat(document.getElementById('firstPuttDistance').value) || 0;
+            const totalPutts = parseInt(document.getElementById('totalPutts').value) || 0;
+
+            const sg = {
+                total: 0,
+                offTee: 0,
+                approach: 0,
+                aroundGreen: 0,
+                putting: 0
+            };
+
+            // Binary strokes gained vs par (1 = gained, 0 = lost/equal)
+            sg.total = score <= par ? 1 : 0;
+
+            // Binary off the tee (1 = good, 0 = poor)
+            if (par > 3) {
+                const avgDistance = par === 4 ? 280 : 320;
+                const distanceGood = drivingDistance >= avgDistance - 20;
+                const fairwayGood = fairwayHit === 'hit';
+                sg.offTee = (distanceGood && fairwayGood) ? 1 : 0;
+            }
+
+            // Binary approach (1 = good, 0 = poor)
+            if (proximity > 0) {
+                const avgProximity = yardage < 150 ? 18 : yardage < 200 ? 25 : yardage < 250 ? 35 : 45;
+                const proximityGood = proximity <= avgProximity;
+                const girGood = gir === 'yes';
+                sg.approach = (proximityGood && girGood) ? 1 : 0;
+            }
+
+            // Binary around green (1 = good, 0 = poor)
+            if (startingPosition && startingPosition !== 'na') {
+                const positionGood = startingPosition === 'fairway' || startingPosition === 'rough';
+                const upDownGood = upAndDown === 'yes';
+                sg.aroundGreen = (positionGood && upDownGood) ? 1 : 0;
+            }
+
+            // Binary putting (1 = good, 0 = poor)
+            if (totalPutts > 0) {
+                const avgPutts = firstPuttDistance < 10 ? 1.2 : firstPuttDistance < 20 ? 1.8 : firstPuttDistance < 30 ? 2.1 : 2.3;
+                sg.putting = totalPutts <= Math.ceil(avgPutts) ? 1 : 0;
+            }
+
+            // Update displays
+            updateSGDisplay('sgOffTeeDisplay', sg.offTee);
+            updateSGDisplay('sgApproachDisplay', sg.approach);
+            updateSGDisplay('sgAroundDisplay', sg.aroundGreen);
+            updateSGDisplay('sgPuttingDisplay', sg.putting);
+            updateSGDisplay('sgTotalDisplay', sg.total);
+
+            return sg;
+        }
+
+        function updateSGDisplay(elementId, value) {
+            const element = document.getElementById(elementId);
+            element.textContent = value.toString(); // Show 0 or 1
+            element.className = 'sg-display ' + (value > 0 ? 'positive' : 'negative');
+        }
+
+        function saveHole() {
+            const hole = {
+                number: currentHoleNum,
+                par: parseInt(document.getElementById('holePar').value) || 4,
+                yardage: parseInt(document.getElementById('holeYardage').value) || 400,
+                score: parseInt(document.getElementById('holeScore').value) || 4,
+                strokesGained: calculateStrokesGained()
+            };
+
+            // Check if hole already exists
+            const existingIndex = currentRound.holes.findIndex(h => h.number === hole.number);
+            if (existingIndex >= 0) {
+                currentRound.holes[existingIndex] = hole;
+            } else {
+                currentRound.holes.push(hole);
+            }
+
+            currentRound.holes.sort((a, b) => a.number - b.number);
+            saveData();
+            alert(`Hole ${hole.number} saved! SG Total: ${hole.strokesGained.total.toFixed(2)}`);
+        }
+
+        function nextHole() {
+            if (currentHoleNum < 18) {
+                currentHoleNum++;
+                updateHoleDisplay();
+                clearHole();
+            } else {
+                alert('Round complete!');
+            }
+        }
+
+        function clearHole() {
+            document.getElementById('holePar').value = '';
+            document.getElementById('holeYardage').value = '';
+            document.getElementById('holeScore').value = '';
+            document.getElementById('drivingDistance').value = '';
+            document.getElementById('fairwayHit').value = '';
+            document.getElementById('proximity').value = '';
+            document.getElementById('gir').value = '';
+            document.getElementById('startingPosition').value = '';
+            document.getElementById('upAndDown').value = '';
+            document.getElementById('firstPuttDistance').value = '';
+            document.getElementById('totalPutts').value = '';
+            
+            // Reset displays
+            ['sgOffTeeDisplay', 'sgApproachDisplay', 'sgAroundDisplay', 'sgPuttingDisplay', 'sgTotalDisplay'].forEach(id => {
+                updateSGDisplay(id, 0);
+            });
+        }
+
+        function finishRound() {
+            if (currentRound.holes.length === 0) {
+                alert('No holes recorded!');
+                return;
+            }
+
+            if (confirm('Finish round and export data?')) {
+                exportData();
+                if (confirm('Start new round?')) {
+                    currentRound.holes = [];
+                    currentHoleNum = 1;
+                    updateHoleDisplay();
+                    clearHole();
+                    saveData();
+                    alert('New round ready!');
+                }
+            }
+        }
+
+        function exportData() {
+            if (currentRound.holes.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let csv = 'Course,Date,Hole,Par,Yardage,Score,SG Total,SG Off Tee,SG Approach,SG Around Green,SG Putting\n';
+            
+            currentRound.holes.forEach(hole => {
+                csv += `"${currentRound.course}","${currentRound.date}",${hole.number},${hole.par},${hole.yardage},${hole.score},${hole.strokesGained.total.toFixed(2)},${hole.strokesGained.offTee.toFixed(2)},${hole.strokesGained.approach.toFixed(2)},${hole.strokesGained.aroundGreen.toFixed(2)},${hole.strokesGained.putting.toFixed(2)}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `strokes-gained-mobile-${currentRound.date || 'today'}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function viewSummary() {
+            const summarySection = document.getElementById('summarySection');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            if (currentRound.holes.length === 0) {
+                summaryContent.innerHTML = '<p>No holes recorded yet</p>';
+            } else {
+                let totalScore = 0;
+                let totalPar = 0;
+                let totalSG = 0;
+                let sgOffTee = 0;
+                let sgApproach = 0;
+                let sgAroundGreen = 0;
+                let sgPutting = 0;
+
+                currentRound.holes.forEach(hole => {
+                    totalScore += hole.score;
+                    totalPar += hole.par;
+                    totalSG += hole.strokesGained.total;
+                    sgOffTee += hole.strokesGained.offTee;
+                    sgApproach += hole.strokesGained.approach;
+                    sgAroundGreen += hole.strokesGained.aroundGreen;
+                    sgPutting += hole.strokesGained.putting;
+                });
+
+                const netScore = totalScore - totalPar;
+                const holes = currentRound.holes.length;
+
+                summaryContent.innerHTML = `
+                    <div><strong>Total Score:</strong> ${totalScore} (${netScore > 0 ? '+' : ''}${netScore})</div>
+                    <div><strong>Total SG:</strong> ${totalSG} / ${holes}</div>
+                    <div><strong>Holes:</strong> ${holes}</div>
+                    <div><strong>SG Off Tee:</strong> ${sgOffTee} / ${holes}</div>
+                    <div><strong>SG Approach:</strong> ${sgApproach} / ${holes}</div>
+                    <div><strong>SG Around:</strong> ${sgAroundGreen} / ${holes}</div>
+                    <div><strong>SG Putting:</strong> ${sgPutting} / ${holes}</div>
+                    <div><strong>Success Rates:</strong></div>
+                    <div>Off Tee: ${((sgOffTee/holes)*100).toFixed(0)}%</div>
+                    <div>Approach: ${((sgApproach/holes)*100).toFixed(0)}%</div>
+                    <div>Around: ${((sgAroundGreen/holes)*100).toFixed(0)}%</div>
+                    <div>Putting: ${((sgPutting/holes)*100).toFixed(0)}%</div>
+                `;
+            }
+            
+            summarySection.style.display = 'block';
+        }
+
+        function hideSummary() {
+            document.getElementById('summarySection').style.display = 'none';
+        }
+
+        function saveData() {
+            currentRound.course = document.getElementById('courseName').value;
+            currentRound.date = document.getElementById('roundDate').value;
+            currentRound.handicapIndex = parseFloat(document.getElementById('handicapIndex').value) || 0;
+            localStorage.setItem('mobileStrokesGained', JSON.stringify(currentRound));
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('mobileStrokesGained');
+            if (saved) {
+                currentRound = JSON.parse(saved);
+                document.getElementById('courseName').value = currentRound.course || '';
+                document.getElementById('roundDate').value = currentRound.date || '';
+                document.getElementById('handicapIndex').value = currentRound.handicapIndex || '';
+            }
+        }
+
+        // Auto-calculate on input change
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = ['holePar', 'holeScore', 'holeYardage', 'drivingDistance', 'fairwayHit', 'proximity', 'gir', 'startingPosition', 'upAndDown', 'firstPuttDistance', 'totalPutts'];
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', calculateStrokesGained);
+                    element.addEventListener('change', calculateStrokesGained);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
