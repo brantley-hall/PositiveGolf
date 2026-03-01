@@ -55,6 +55,7 @@
                 <button class="btn" onclick="addHole()" id="addHoleBtn" style="display:none;">Add Hole</button>
                 <button class="btn" onclick="finishRound()" id="finishBtn" style="display:none;">Finish Round</button>
                 <button class="btn" onclick="exportData()" id="exportBtn" style="display:none;">Export CSV</button>
+                <button class="btn btn-danger" onclick="clearAllData()">Clear All</button>
                 <button class="btn" onclick="toggleHeader()">Toggle Header</button>
             </div>
             <div class="nav-buttons" id="navigation" style="display:none;">
@@ -123,6 +124,21 @@
                 finishBtn.style.display = 'none';
                 exportBtn.style.display = 'none';
                 navigation.style.display = 'none';
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Clear all data and start fresh?')) {
+                holes = [];
+                holeCounter = 0;
+                currentHoleIndex = 0;
+                document.getElementById('holesContainer').innerHTML = '';
+                document.getElementById('courseName').value = '';
+                document.getElementById('roundDate').valueAsDate = new Date();
+                localStorage.removeItem('golfTrackerData');
+                updateNavigation();
+                updateUIVisibility();
+                updateSummary();
             }
         }
 
