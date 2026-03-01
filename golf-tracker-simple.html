@@ -220,10 +220,10 @@
                 
                 <div class="shot-grid">
                     <div class="header-row">Putt Distance (feet)</div>
-                    <div class="shot-row">
+                    <div class="shot-row" style="grid-template-columns: 1fr 1fr 2fr;">
                         <button class="plus-btn ${hole.puttDistance.tens > 0 ? 'active' : ''}" onclick="updatePuttDistance(${hole.number}, 'tens')">${hole.puttDistance.tens}</button>
                         <button class="plus-btn ${hole.puttDistance.ones > 0 ? 'active' : ''}" onclick="updatePuttDistance(${hole.number}, 'ones')">${hole.puttDistance.ones}</button>
-                        <div style="grid-column: span 2; text-align: center; font-weight: bold; padding: 10px; background: #f3f4f6; border-radius: 4px;">
+                        <div style="text-align: center; font-weight: bold; padding: 10px; background: #f3f4f6; border-radius: 4px;">
                             Total: ${hole.puttDistance.tens}${hole.puttDistance.ones} ft
                         </div>
                     </div>
