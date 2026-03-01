@@ -113,7 +113,10 @@
             holeDiv.id = 'hole-' + hole.number;
             
             holeDiv.innerHTML = `
-                <h3>Hole ${hole.number}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">Hole ${hole.number}</h3>
+                    <button class="btn btn-success" style="font-size: 16px; padding: 12px 20px;" onclick="enterHole(${hole.number})">Enter Hole ${hole.number}</button>
+                </div>
                 
                 <div class="shot-grid">
                     <div class="header-row">Tee</div>
