@@ -113,7 +113,10 @@
             holeDiv.id = 'hole-' + hole.number;
             
             holeDiv.innerHTML = `
-                <h3>Hole ${hole.number}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">Hole ${hole.number}</h3>
+                    <button class="btn btn-success" style="font-size: 16px; padding: 12px 20px;" onclick="enterHole(${hole.number})">Enter Hole ${hole.number}</button>
+                </div>
                 
                 <div class="shot-grid">
                     <div class="header-row">Tee</div>
@@ -154,10 +157,13 @@
                         <button class="minus-btn ${hole.putting.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'putting', 'minus')">-${hole.putting.minus}</button>
                     </div>
                 </div>
+<<<<<<< HEAD
                 
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn btn-success" onclick="enterHole(${hole.number})">Enter Hole ${hole.number}</button>
                 </div>
+=======
+>>>>>>> main
             `;
             
             container.appendChild(holeDiv);
@@ -181,6 +187,7 @@
             }
         }
 
+<<<<<<< HEAD
         function enterHole(holeNumber) {
             // Mark hole as entered and move to next hole
             const holeIndex = holes.findIndex(h => h.number === holeNumber);
@@ -197,6 +204,8 @@
             }
         }
 
+=======
+>>>>>>> main
         function decrementShot(holeNumber, shotType, direction) {
             const hole = holes.find(h => h.number === holeNumber);
             if (hole) {
