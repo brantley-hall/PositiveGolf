@@ -180,6 +180,22 @@
             }
         }
 
+        function enterHole(holeNumber) {
+            // Mark hole as entered and move to next hole
+            const holeIndex = holes.findIndex(h => h.number === holeNumber);
+            if (holeIndex >= 0) {
+                // Move to next hole or create new one
+                if (holeIndex < holes.length - 1) {
+                    currentHoleIndex = holeIndex + 1;
+                } else {
+                    addHole();
+                }
+                renderCurrentHole();
+                updateNavigation();
+                scrollToCurrentHole();
+            }
+        }
+
         function decrementShot(holeNumber, shotType, direction) {
             const hole = holes.find(h => h.number === holeNumber);
             if (hole) {
