@@ -52,7 +52,6 @@
             <input type="date" id="roundDate">
             <div class="nav-buttons">
                 <button class="btn btn-success" onclick="startRound()" id="startBtn">START ROUND</button>
-                <button class="btn" onclick="addHole()" id="addHoleBtn" style="display:none;">Add Hole</button>
                 <button class="btn" onclick="finishRound()" id="finishBtn" style="display:none;">Finish Round</button>
                 <button class="btn" onclick="exportData()" id="exportBtn" style="display:none;">Export CSV</button>
                 <button class="btn btn-danger" onclick="clearAllData()">Clear All</button>
@@ -107,7 +106,6 @@
         function updateUIVisibility() {
             const hasHoles = holes.length > 0;
             const startBtn = document.getElementById('startBtn');
-            const addHoleBtn = document.getElementById('addHoleBtn');
             const finishBtn = document.getElementById('finishBtn');
             const exportBtn = document.getElementById('exportBtn');
             const navigation = document.getElementById('navigation');
@@ -116,7 +114,6 @@
                 // Program has data - show round controls, hide start
                 startBtn.style.display = 'none';
                 startBtn.disabled = true;
-                addHoleBtn.style.display = 'inline-block';
                 finishBtn.style.display = 'inline-block';
                 exportBtn.style.display = 'inline-block';
                 navigation.style.display = 'block';
@@ -124,7 +121,6 @@
                 // Program is empty - show start, hide round controls
                 startBtn.style.display = 'inline-block';
                 startBtn.disabled = false;
-                addHoleBtn.style.display = 'none';
                 finishBtn.style.display = 'none';
                 exportBtn.style.display = 'none';
                 navigation.style.display = 'none';
