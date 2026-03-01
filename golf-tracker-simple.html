@@ -153,7 +153,8 @@
                 tee: { plus: 0, minus: 0 },
                 approach: { plus: 0, minus: 0 },
                 aroundGreen: { plus: 0, minus: 0 },
-                putting: { plus: 0, minus: 0 }
+                putting: { plus: 0, minus: 0 },
+                puttDistance: { tens: 0, ones: 0 }
             };
             
             holes.push(hole);
@@ -220,6 +221,17 @@
                         <button class="minus-btn ${hole.putting.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'putting', 'minus')">-${hole.putting.minus}</button>
                     </div>
                 </div>
+                
+                <div class="shot-grid">
+                    <div class="header-row">Putt Distance (feet)</div>
+                    <div class="shot-row">
+                        <button class="plus-btn ${hole.puttDistance.tens > 0 ? 'active' : ''}" onclick="updatePuttDistance(${hole.number}, 'tens')">${hole.puttDistance.tens}</button>
+                        <button class="plus-btn ${hole.puttDistance.ones > 0 ? 'active' : ''}" onclick="updatePuttDistance(${hole.number}, 'ones')">${hole.puttDistance.ones}</button>
+                        <div style="grid-column: span 2; text-align: center; font-weight: bold; padding: 10px; background: #f3f4f6; border-radius: 4px;">
+                            Total: ${hole.puttDistance.tens}${hole.puttDistance.ones} ft
+                        </div>
+                    </div>
+                </div>
             `;
             
             container.appendChild(holeDiv);
@@ -268,6 +280,16 @@
                     renderHole(hole);
                     saveData();
                 }
+            }
+        }
+
+        function updatePuttDistance(holeNumber, digit) {
+            const hole = holes.find(h => h.number === holeNumber);
+            if (hole) {
+                // Increment the digit (0-9 cycling)
+                hole.puttDistance[digit] = (hole.puttDistance[digit] + 1) % 10;
+                renderHole(hole);
+                saveData();
             }
         }
 
@@ -460,6 +482,13 @@
                     document.getElementById('courseName').value = data.course || '';
                     document.getElementById('roundDate').value = data.date || '';
                     holes = data.holes || [];
+                    
+                    // Add backward compatibility for puttDistance
+                    holes.forEach(hole => {
+                        if (!hole.puttDistance) {
+                            hole.puttDistance = { tens: 0, ones: 0 };
+                        }
+                    });
                     
                     // Set current hole to the last one or first if none exist
                     currentHoleIndex = holes.length > 0 ? holes.length - 1 : 0;
