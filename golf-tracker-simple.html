@@ -105,22 +105,25 @@
         }
 
         function updateUIVisibility() {
-            const hasStarted = holes.length > 0 && currentHoleIndex >= 0;
+            const hasHoles = holes.length > 0;
             const startBtn = document.getElementById('startBtn');
             const addHoleBtn = document.getElementById('addHoleBtn');
             const finishBtn = document.getElementById('finishBtn');
             const exportBtn = document.getElementById('exportBtn');
             const navigation = document.getElementById('navigation');
             
-            // Always show START button unless we're actively in a round
-            if (hasStarted && document.getElementById('holesContainer').children.length > 0) {
+            if (hasHoles) {
+                // Program has data - show round controls, hide start
                 startBtn.style.display = 'none';
+                startBtn.disabled = true;
                 addHoleBtn.style.display = 'inline-block';
                 finishBtn.style.display = 'inline-block';
                 exportBtn.style.display = 'inline-block';
                 navigation.style.display = 'block';
             } else {
+                // Program is empty - show start, hide round controls
                 startBtn.style.display = 'inline-block';
+                startBtn.disabled = false;
                 addHoleBtn.style.display = 'none';
                 finishBtn.style.display = 'none';
                 exportBtn.style.display = 'none';
