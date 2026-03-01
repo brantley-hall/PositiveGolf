@@ -352,27 +352,38 @@
             const totalPlus = totals.tee.plus + totals.approach.plus + totals.aroundGreen.plus + totals.putting.plus;
             const totalMinus = totals.tee.minus + totals.approach.minus + totals.aroundGreen.minus + totals.putting.minus;
 
+            // Calculate net totals for each shot type
+            const teeNet = totals.tee.plus - totals.tee.minus;
+            const approachNet = totals.approach.plus - totals.approach.minus;
+            const aroundNet = totals.aroundGreen.plus - totals.aroundGreen.minus;
+            const puttingNet = totals.putting.plus - totals.putting.minus;
+            const overallNet = totalPlus - totalMinus;
+
             summaryContent.innerHTML = `
                 <div class="summary-grid">
                     <div>
-                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Tee: +${totals.tee.plus}</div>
-                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Tee: -${totals.tee.minus}</div>
+                        <div style="background: ${teeNet >= 0 ? '#10b981' : '#ef4444'}; color: white; padding: 15px; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold;">
+                            Tee: ${teeNet >= 0 ? '+' : ''}${teeNet}
+                        </div>
                     </div>
                     <div>
-                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Approach: +${totals.approach.plus}</div>
-                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Approach: -${totals.approach.minus}</div>
+                        <div style="background: ${approachNet >= 0 ? '#10b981' : '#ef4444'}; color: white; padding: 15px; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold;">
+                            Approach: ${approachNet >= 0 ? '+' : ''}${approachNet}
+                        </div>
                     </div>
                     <div>
-                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Around: +${totals.aroundGreen.plus}</div>
-                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Around: -${totals.aroundGreen.minus}</div>
+                        <div style="background: ${aroundNet >= 0 ? '#10b981' : '#ef4444'}; color: white; padding: 15px; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold;">
+                            Around: ${aroundNet >= 0 ? '+' : ''}${aroundNet}
+                        </div>
                     </div>
                     <div>
-                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Putting: +${totals.putting.plus}</div>
-                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Putting: -${totals.putting.minus}</div>
+                        <div style="background: ${puttingNet >= 0 ? '#10b981' : '#ef4444'}; color: white; padding: 15px; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold;">
+                            Putting: ${puttingNet >= 0 ? '+' : ''}${puttingNet}
+                        </div>
                     </div>
                 </div>
-                <div style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 15px;">
-                    Overall: <span style="color: #10b981;">+${totalPlus}</span> / <span style="color: #ef4444;">-${totalMinus}</span>
+                <div style="text-align: center; font-size: 20px; font-weight: bold; margin-top: 20px;">
+                    Overall: <span style="color: ${overallNet >= 0 ? '#10b981' : '#ef4444'};">${overallNet >= 0 ? '+' : ''}${overallNet}</span>
                 </div>
             `;
         }
