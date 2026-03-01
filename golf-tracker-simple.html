@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Golf Tracker - Simple Version</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 400px; margin: 0 auto; }
+        .header { background: #1a1a1a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; transition: all 0.3s ease; }
+        .header.hidden { display: none; }
+        .header.minimized { padding: 10px; margin-bottom: 10px; }
+        .hole-section { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; border: 2px solid #ddd; }
+        .shot-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 10px 0; }
+        .header-row { background: #333; color: white; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; }
+        .shot-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 5px 0; }
+        .plus-btn { background: white; color: #333; border: 2px solid #ddd; padding: 10px 5px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .plus-btn:hover { background: #f8f9fa; }
+        .plus-btn:active { background: #10b981; color: white; border-color: #10b981; transform: scale(0.95); }
+        .plus-btn.active { background: #10b981; color: white; border-color: #10b981; }
+        .minus-btn { background: white; color: #333; border: 2px solid #ddd; padding: 10px 5px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .minus-btn:hover { background: #f8f9fa; }
+        .minus-btn:active { background: #ef4444; color: white; border-color: #ef4444; transform: scale(0.95); }
+        .minus-btn.active { background: #ef4444; color: white; border-color: #ef4444; }
+        .decrement-btn { background: #fbbf24; color: #333; border: 2px solid #f59e0b; padding: 8px 4px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .decrement-btn:hover { background: #f59e0b; }
+        .decrement-btn:active { background: #d97706; transform: scale(0.95); }
+        .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 3px; font-size: 12px; }
+        .btn:hover { background: #2563eb; }
+        .btn:active { background: #1d4ed8; transform: scale(0.95); }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-danger:active { background: #b91c1c; transform: scale(0.95); }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-success:active { background: #047857; transform: scale(0.95); }
+        .summary { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .current-hole { border: 3px solid #3b82f6 !important; }
+        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin: 3px; width: 100%; box-sizing: border-box; }
+        .nav-buttons { text-align: center; margin: 10px 0; }
+        .summary-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛳ Simple Golf Tracker</h1>
+            <p>Track + and - for every shot type</p>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="courseName" placeholder="Course Name">
+            <input type="date" id="roundDate">
+            <div class="nav-buttons">
+                <button class="btn btn-success" onclick="addHole()">Add Hole</button>
+                <button class="btn" onclick="finishRound()">Finish Round</button>
+                <button class="btn" onclick="exportData()">Export CSV</button>
+                <button class="btn" onclick="toggleHeader()">Toggle Header</button>
+            </div>
+            <div class="nav-buttons">
+                <strong>Current Hole: <span id="currentHole">0</span></strong> | 
+                <strong>Total Holes: <span id="totalHoles">0</span></strong>
+                <br><br>
+                <button class="btn" onclick="previousHole()">← Previous</button>
+                <button class="btn" onclick="nextHole()">Next →</button>
+            </div>
+        </div>
+
+        <div id="holesContainer"></div>
+
+        <div class="summary">
+            <h3>Round Summary</h3>
+            <div id="summaryContent">No holes recorded yet</div>
+        </div>
+    </div>
+
+    <script>
+        let holes = [];
+        let holeCounter = 0;
+        let currentHoleIndex = 0;
+
+        // Initialize
+        window.onload = function() {
+            document.getElementById('roundDate').valueAsDate = new Date();
+            loadSavedData();
+        };
+
+        function addHole() {
+            holeCounter++;
+            const hole = {
+                number: holeCounter,
+                tee: { plus: 0, minus: 0 },
+                approach: { plus: 0, minus: 0 },
+                aroundGreen: { plus: 0, minus: 0 },
+                putting: { plus: 0, minus: 0 }
+            };
+            
+            holes.push(hole);
+            renderHole(hole);
+            currentHoleIndex = holes.length - 1;
+            updateNavigation();
+            saveData();
+            scrollToCurrentHole();
+        }
+
+        function renderHole(hole) {
+            const container = document.getElementById('holesContainer');
+            
+            // Clear all holes and show only the current one
+            container.innerHTML = '';
+            
+            const holeDiv = document.createElement('div');
+            holeDiv.className = 'hole-section';
+            holeDiv.id = 'hole-' + hole.number;
+            
+            holeDiv.innerHTML = `
+                <h3>Hole ${hole.number}</h3>
+                
+                <div class="shot-grid">
+                    <div class="header-row">Tee</div>
+                    <div class="shot-row">
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'tee', 'plus')">-</button>
+                        <button class="plus-btn ${hole.tee.plus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'tee', 'plus')">+${hole.tee.plus}</button>
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'tee', 'minus')">-</button>
+                        <button class="minus-btn ${hole.tee.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'tee', 'minus')">-${hole.tee.minus}</button>
+                    </div>
+                </div>
+                
+                <div class="shot-grid">
+                    <div class="header-row">Approach</div>
+                    <div class="shot-row">
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'approach', 'plus')">-</button>
+                        <button class="plus-btn ${hole.approach.plus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'approach', 'plus')">+${hole.approach.plus}</button>
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'approach', 'minus')">-</button>
+                        <button class="minus-btn ${hole.approach.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'approach', 'minus')">-${hole.approach.minus}</button>
+                    </div>
+                </div>
+                
+                <div class="shot-grid">
+                    <div class="header-row">Around Green</div>
+                    <div class="shot-row">
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'aroundGreen', 'plus')">-</button>
+                        <button class="plus-btn ${hole.aroundGreen.plus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'aroundGreen', 'plus')">+${hole.aroundGreen.plus}</button>
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'aroundGreen', 'minus')">-</button>
+                        <button class="minus-btn ${hole.aroundGreen.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'aroundGreen', 'minus')">-${hole.aroundGreen.minus}</button>
+                    </div>
+                </div>
+                
+                <div class="shot-grid">
+                    <div class="header-row">Putting</div>
+                    <div class="shot-row">
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'putting', 'plus')">-</button>
+                        <button class="plus-btn ${hole.putting.plus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'putting', 'plus')">+${hole.putting.plus}</button>
+                        <button class="decrement-btn" onclick="decrementShot(${hole.number}, 'putting', 'minus')">-</button>
+                        <button class="minus-btn ${hole.putting.minus > 0 ? 'active' : ''}" onclick="updateShot(${hole.number}, 'putting', 'minus')">-${hole.putting.minus}</button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(holeDiv);
+            updateSummary();
+        }
+
+        function updateShot(holeNumber, shotType, direction) {
+            const hole = holes.find(h => h.number === holeNumber);
+            if (hole) {
+                // Check if we're at the maximum (2) before incrementing
+                if (direction === 'plus' && hole[shotType].plus >= 2) {
+                    return; // Don't increment if already at max
+                }
+                if (direction === 'minus' && hole[shotType].minus >= 2) {
+                    return; // Don't increment if already at max
+                }
+                
+                hole[shotType][direction]++;
+                renderHole(hole);
+                saveData();
+            }
+        }
+
+        function decrementShot(holeNumber, shotType, direction) {
+            const hole = holes.find(h => h.number === holeNumber);
+            if (hole) {
+                // Only decrement if above 0
+                if (hole[shotType][direction] > 0) {
+                    hole[shotType][direction]--;
+                    renderHole(hole);
+                    saveData();
+                }
+            }
+        }
+
+        function nextHole() {
+            if (currentHoleIndex < holes.length - 1) {
+                currentHoleIndex++;
+                renderCurrentHole();
+                updateNavigation();
+            } else {
+                if (holes.length > 0) {
+                    addHole();
+                }
+            }
+        }
+
+        function previousHole() {
+            if (currentHoleIndex > 0) {
+                currentHoleIndex--;
+                renderCurrentHole();
+                updateNavigation();
+            }
+        }
+
+        function toggleHeader() {
+            const header = document.querySelector('.header');
+            if (header) {
+                header.classList.toggle('hidden');
+            }
+        }
+
+        function renderCurrentHole() {
+            if (holes.length > 0 && currentHoleIndex >= 0) {
+                // Hide the header when viewing holes
+                const header = document.querySelector('.header');
+                if (header) {
+                    header.classList.add('hidden');
+                }
+                renderHole(holes[currentHoleIndex]);
+            } else {
+                // Show header when no holes
+                const header = document.querySelector('.header');
+                if (header) {
+                    header.classList.remove('hidden');
+                }
+            }
+        }
+
+        function scrollToCurrentHole() {
+            if (holes.length > 0 && currentHoleIndex >= 0) {
+                const currentHoleElement = document.getElementById('hole-' + holes[currentHoleIndex].number);
+                if (currentHoleElement) {
+                    currentHoleElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Highlight current hole
+                    document.querySelectorAll('[id^="hole-"]').forEach(el => {
+                        el.classList.remove('current-hole');
+                    });
+                    currentHoleElement.classList.add('current-hole');
+                }
+            }
+        }
+
+        function updateNavigation() {
+            document.getElementById('currentHole').textContent = holes.length > 0 ? holes[currentHoleIndex].number : 0;
+            document.getElementById('totalHoles').textContent = holes.length;
+        }
+
+        function updateSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            
+            if (holes.length === 0) {
+                summaryContent.innerHTML = 'No holes recorded yet';
+                return;
+            }
+
+            let totals = {
+                tee: { plus: 0, minus: 0 },
+                approach: { plus: 0, minus: 0 },
+                aroundGreen: { plus: 0, minus: 0 },
+                putting: { plus: 0, minus: 0 }
+            };
+
+            holes.forEach(hole => {
+                ['tee', 'approach', 'aroundGreen', 'putting'].forEach(shotType => {
+                    totals[shotType].plus += hole[shotType].plus;
+                    totals[shotType].minus += hole[shotType].minus;
+                });
+            });
+
+            const totalPlus = totals.tee.plus + totals.approach.plus + totals.aroundGreen.plus + totals.putting.plus;
+            const totalMinus = totals.tee.minus + totals.approach.minus + totals.aroundGreen.minus + totals.putting.minus;
+
+            summaryContent.innerHTML = `
+                <div class="summary-grid">
+                    <div>
+                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Tee: +${totals.tee.plus}</div>
+                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Tee: -${totals.tee.minus}</div>
+                    </div>
+                    <div>
+                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Approach: +${totals.approach.plus}</div>
+                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Approach: -${totals.approach.minus}</div>
+                    </div>
+                    <div>
+                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Around: +${totals.aroundGreen.plus}</div>
+                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Around: -${totals.aroundGreen.minus}</div>
+                    </div>
+                    <div>
+                        <div style="background: #10b981; color: white; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 5px;">Putting: +${totals.putting.plus}</div>
+                        <div style="background: #ef4444; color: white; padding: 10px; border-radius: 4px; text-align: center;">Putting: -${totals.putting.minus}</div>
+                    </div>
+                </div>
+                <div style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 15px;">
+                    Overall: <span style="color: #10b981;">+${totalPlus}</span> / <span style="color: #ef4444;">-${totalMinus}</span>
+                </div>
+            `;
+        }
+
+        function finishRound() {
+            if (holes.length === 0) {
+                alert('No holes recorded yet!');
+                return;
+            }
+
+            if (confirm('Finish round with ' + holes.length + ' holes? This will export your data and prepare for a new round.')) {
+                exportData();
+                if (confirm('Round exported! Start a new round?')) {
+                    holes = [];
+                    holeCounter = 0;
+                    currentHoleIndex = 0;
+                    document.getElementById('holesContainer').innerHTML = '';
+                    document.getElementById('courseName').value = '';
+                    document.getElementById('roundDate').valueAsDate = new Date();
+                    updateNavigation();
+                    updateSummary();
+                    localStorage.removeItem('golfTrackerData');
+                    alert('New round ready! Good luck!');
+                }
+            }
+        }
+
+        function exportData() {
+            if (holes.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let csv = 'Course,Date,Hole,Tee Plus,Tee Minus,Approach Plus,Approach Minus,Around Green Plus,Around Green Minus,Putting Plus,Putting Minus\n';
+            
+            holes.forEach(hole => {
+                csv += '"' + document.getElementById('courseName').value + '","' + document.getElementById('roundDate').value + '",' + hole.number + ',' + hole.tee.plus + ',' + hole.tee.minus + ',' + hole.approach.plus + ',' + hole.approach.minus + ',' + hole.aroundGreen.plus + ',' + hole.aroundGreen.minus + ',' + hole.putting.plus + ',' + hole.putting.minus + '\n';
+            });
+
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'golf-tracker-' + (document.getElementById('roundDate').value || 'today') + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function saveData() {
+            const data = {
+                course: document.getElementById('courseName').value,
+                date: document.getElementById('roundDate').value,
+                holes: holes
+            };
+            localStorage.setItem('golfTrackerData', JSON.stringify(data));
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('golfTrackerData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('courseName').value = data.course || '';
+                document.getElementById('roundDate').value = data.date || '';
+                holes = data.holes || [];
+                
+                // Set current hole to the last one or first if none exist
+                currentHoleIndex = holes.length > 0 ? holes.length - 1 : 0;
+                
+                // Show only the current hole
+                if (holes.length > 0) {
+                    renderCurrentHole();
+                }
+                
+                // Update hole counter
+                holes.forEach(hole => {
+                    holeCounter = Math.max(holeCounter, hole.number);
+                });
+                
+                updateNavigation();
+            }
+        }
+    </script>
+</body>
+</html>

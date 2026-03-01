@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Course Tracker - Record Your Rounds</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .golf-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .golf-fairway { background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%); }
+        .golf-sand { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
+        .golf-water { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .score-card { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+        .par-birdie { color: #10b981; font-weight: bold; }
+        .par-par { color: #6b7280; }
+        .par-bogey { color: #f59e0b; }
+        .par-double-bogey { color: #ef4444; }
+        .hole-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <header class="golf-green text-white py-6 px-4 shadow-lg">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-golf-ball text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Golf Course Tracker</h1>
+                        <p class="text-green-100">Record Every Shot, Track Every Round</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button onclick="newRound()" class="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition">
+                        <i class="fas fa-plus mr-2"></i>New Round
+                    </button>
+                    <button onclick="viewStats()" class="bg-green-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-800 transition">
+                        <i class="fas fa-chart-bar mr-2"></i>Statistics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Course Selection -->
+        <section id="courseSelection" class="mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>Select Course
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Course Name</label>
+                        <input type="text" id="courseName" placeholder="Enter course name" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                        <input type="date" id="roundDate" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tee Box</label>
+                    <select id="teeBox" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="championship">Championship (Blue)</option>
+                        <option value="regular">Regular (White)</option>
+                        <option value="senior">Senior (Gold)</option>
+                        <option value="ladies">Ladies (Red)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hole Recording Section -->
+        <section id="holeRecording" class="mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-flag text-green-600 mr-2"></i>Hole Recording
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Current Hole:</span>
+                        <div class="hole-number golf-green" id="currentHoleNum">1</div>
+                    </div>
+                </div>
+
+                <!-- Hole Information -->
+                <div class="grid md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hole Number</label>
+                        <input type="number" id="holeNumber" min="1" max="18" value="1" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Par</label>
+                        <select id="holePar" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="3">Par 3</option>
+                            <option value="4" selected>Par 4</option>
+                            <option value="5">Par 5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Yardage</label>
+                        <input type="number" id="holeYardage" placeholder="e.g., 425" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Handicap</label>
+                        <input type="number" id="holeHandicap" min="1" max="18" placeholder="1-18" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Score Recording -->
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Score</label>
+                        <input type="number" id="holeScore" min="1" placeholder="Strokes" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Putts</label>
+                        <input type="number" id="holePutts" min="0" placeholder="Putts" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Penalties</label>
+                        <input type="number" id="holePenalties" min="0" placeholder="Penalty strokes" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Shot Details -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Shot Details</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fairway Hit</label>
+                            <select id="fairwayHit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select</option>
+                                <option value="hit">Hit</option>
+                                <option value="miss-left">Miss Left</option>
+                                <option value="miss-right">Miss Right</option>
+                                <option value="na">N/A (Par 3)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Green in Regulation (GIR)</label>
+                            <select id="gir" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sand Save</label>
+                            <select id="sandSave" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="na">N/A</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Up and Down</label>
+                            <select id="upAndDown" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="na">N/A</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea id="holeNotes" rows="3" placeholder="Wind conditions, club selection, shot shapes, etc..." 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-4">
+                    <button onclick="saveHole()" class="golf-green text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-save mr-2"></i>Save Hole
+                    </button>
+                    <button onclick="nextHole()" class="golf-fairway text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-arrow-right mr-2"></i>Next Hole
+                    </button>
+                    <button onclick="clearHole()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                        <i class="fas fa-eraser mr-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current Round Summary -->
+        <section id="roundSummary" class="mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-list-ol text-green-600 mr-2"></i>Current Round Summary
+                </h2>
+                <div id="holesList" class="space-y-2">
+                    <!-- Holes will be added here dynamically -->
+                </div>
+                <div id="roundTotals" class="mt-4 pt-4 border-t border-gray-200">
+                    <!-- Totals will be calculated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Dashboard -->
+        <section id="statsDashboard" class="mb-8 hidden">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-chart-line text-green-600 mr-2"></i>Performance Statistics
+                </h2>
+                <div id="statsContent">
+                    <!-- Statistics will be displayed here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6 px-4 mt-12">
+        <div class="container mx-auto text-center">
+            <p class="text-gray-300">Golf Course Tracker © 2026 | Track. Analyze. Improve.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Data storage
+        let currentRound = {
+            course: '',
+            date: '',
+            teeBox: '',
+            holes: []
+        };
+
+        let allRounds = JSON.parse(localStorage.getItem('golfRounds')) || [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            document.getElementById('roundDate').valueAsDate = new Date();
+            
+            // Load saved round if exists
+            loadCurrentRound();
+        });
+
+        function newRound() {
+            if (confirm('Starting a new round will clear any unsaved data. Continue?')) {
+                currentRound = {
+                    course: document.getElementById('courseName').value,
+                    date: document.getElementById('roundDate').value,
+                    teeBox: document.getElementById('teeBox').value,
+                    holes: []
+                };
+                saveCurrentRound();
+                updateHolesList();
+                alert('New round started! Begin recording hole 1.');
+            }
+        }
+
+        function saveHole() {
+            const hole = {
+                number: parseInt(document.getElementById('holeNumber').value),
+                par: parseInt(document.getElementById('holePar').value),
+                yardage: parseInt(document.getElementById('holeYardage').value),
+                handicap: parseInt(document.getElementById('holeHandicap').value),
+                score: parseInt(document.getElementById('holeScore').value),
+                putts: parseInt(document.getElementById('holePutts').value),
+                penalties: parseInt(document.getElementById('holePenalties').value),
+                fairwayHit: document.getElementById('fairwayHit').value,
+                gir: document.getElementById('gir').value,
+                sandSave: document.getElementById('sandSave').value,
+                upAndDown: document.getElementById('upAndDown').value,
+                notes: document.getElementById('holeNotes').value
+            };
+
+            // Validate required fields
+            if (!hole.score || !hole.yardage) {
+                alert('Please enter at least score and yardage.');
+                return;
+            }
+
+            // Check if hole already exists and update
+            const existingIndex = currentRound.holes.findIndex(h => h.number === hole.number);
+            if (existingIndex >= 0) {
+                currentRound.holes[existingIndex] = hole;
+            } else {
+                currentRound.holes.push(hole);
+            }
+
+            // Sort holes by number
+            currentRound.holes.sort((a, b) => a.number - b.number);
+
+            saveCurrentRound();
+            updateHolesList();
+            clearHole();
+            
+            alert(`Hole ${hole.number} saved successfully!`);
+        }
+
+        function nextHole() {
+            const currentHole = parseInt(document.getElementById('holeNumber').value);
+            if (currentHole < 18) {
+                document.getElementById('holeNumber').value = currentHole + 1;
+                document.getElementById('currentHoleNum').textContent = currentHole + 1;
+                clearHole();
+            } else {
+                alert('You\'ve completed all 18 holes!');
+            }
+        }
+
+        function clearHole() {
+            document.getElementById('holeScore').value = '';
+            document.getElementById('holePutts').value = '';
+            document.getElementById('holePenalties').value = '';
+            document.getElementById('fairwayHit').value = '';
+            document.getElementById('gir').value = '';
+            document.getElementById('sandSave').value = '';
+            document.getElementById('upAndDown').value = '';
+            document.getElementById('holeNotes').value = '';
+        }
+
+        function updateHolesList() {
+            const holesList = document.getElementById('holesList');
+            holesList.innerHTML = '';
+
+            if (currentRound.holes.length === 0) {
+                holesList.innerHTML = '<p class="text-gray-500">No holes recorded yet.</p>';
+                document.getElementById('roundTotals').innerHTML = '';
+                return;
+            }
+
+            let totalScore = 0;
+            let totalPar = 0;
+            let totalPutts = 0;
+
+            currentRound.holes.forEach(hole => {
+                const scoreVsPar = hole.score - hole.par;
+                let scoreClass = 'par-par';
+                let scoreText = hole.score;
+
+                if (scoreVsPar < 0) {
+                    scoreClass = 'par-birdie';
+                    scoreText = hole.score + ' (' + (scoreVsPar === -1 ? 'Birdie' : scoreVsPar === -2 ? 'Eagle' : scoreVsPar + ' under') + ')';
+                } else if (scoreVsPar > 0) {
+                    scoreClass = scoreVsPar === 1 ? 'par-bogey' : 'par-double-bogey';
+                    scoreText = hole.score + ' (+' + scoreVsPar + ')';
+                }
+
+                const holeDiv = document.createElement('div');
+                holeDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                holeDiv.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="hole-number golf-green text-sm">${hole.number}</div>
+                        <div>
+                            <span class="font-semibold">Par ${hole.par}</span>
+                            <span class="text-gray-500 ml-2">${hole.yardage}yds</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <span class="${scoreClass} font-bold">${scoreText}</span>
+                        <span class="text-sm text-gray-600">${hole.putts} putts</span>
+                        <button onclick="editHole(${hole.number})" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteHole(${hole.number})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                holesList.appendChild(holeDiv);
+
+                totalScore += hole.score;
+                totalPar += hole.par;
+                totalPutts += hole.putts;
+            });
+
+            // Update totals
+            const totalVsPar = totalScore - totalPar;
+            document.getElementById('roundTotals').innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="bg-gray-50 p-3 rounded">
+                        <div class="text-2xl font-bold ${totalVsPar === 0 ? 'par-par' : totalVsPar < 0 ? 'par-birdie' : 'par-bogey'}">${totalScore}</div>
+                        <div class="text-sm text-gray-600">Total Score</div>
+                        <div class="text-xs ${totalVsPar === 0 ? 'par-par' : totalVsPar < 0 ? 'par-birdie' : 'par-bogey'}">${totalVsPar === 0 ? 'E' : (totalVsPar > 0 ? '+' : '') + totalVsPar}</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <div class="text-2xl font-bold">${totalPar}</div>
+                        <div class="text-sm text-gray-600">Total Par</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <div class="text-2xl font-bold">${totalPutts}</div>
+                        <div class="text-sm text-gray-600">Total Putts</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <div class="text-2xl font-bold">${(totalPutts / currentRound.holes.length).toFixed(1)}</div>
+                        <div class="text-sm text-gray-600">Putts/Hole</div>
+                    </div>
+                </div>
+                <div class="mt-4 flex space-x-4">
+                    <button onclick="finishRound()" class="golf-green text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-check mr-2"></i>Finish Round
+                    </button>
+                    <button onclick="exportRound()" class="golf-fairway text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-download mr-2"></i>Export Round
+                    </button>
+                </div>
+            `;
+        }
+
+        function editHole(holeNumber) {
+            const hole = currentRound.holes.find(h => h.number === holeNumber);
+            if (hole) {
+                document.getElementById('holeNumber').value = hole.number;
+                document.getElementById('holePar').value = hole.par;
+                document.getElementById('holeYardage').value = hole.yardage;
+                document.getElementById('holeHandicap').value = hole.handicap;
+                document.getElementById('holeScore').value = hole.score;
+                document.getElementById('holePutts').value = hole.putts;
+                document.getElementById('holePenalties').value = hole.penalties;
+                document.getElementById('fairwayHit').value = hole.fairwayHit;
+                document.getElementById('gir').value = hole.gir;
+                document.getElementById('sandSave').value = hole.sandSave;
+                document.getElementById('upAndDown').value = hole.upAndDown;
+                document.getElementById('holeNotes').value = hole.notes;
+                document.getElementById('currentHoleNum').textContent = hole.number;
+            }
+        }
+
+        function deleteHole(holeNumber) {
+            if (confirm(`Delete hole ${holeNumber}?`)) {
+                currentRound.holes = currentRound.holes.filter(h => h.number !== holeNumber);
+                saveCurrentRound();
+                updateHolesList();
+            }
+        }
+
+        function finishRound() {
+            if (currentRound.holes.length === 0) {
+                alert('No holes recorded!');
+                return;
+            }
+
+            if (confirm('Finish this round and save to your records?')) {
+                allRounds.push({...currentRound, completed: new Date().toISOString()});
+                localStorage.setItem('golfRounds', JSON.stringify(allRounds));
+                
+                // Clear current round
+                currentRound = { course: '', date: '', teeBox: '', holes: [] };
+                localStorage.removeItem('currentRound');
+                
+                updateHolesList();
+                alert('Round completed and saved to your records!');
+            }
+        }
+
+        function exportRound() {
+            if (currentRound.holes.length === 0) {
+                alert('No holes to export!');
+                return;
+            }
+
+            let csv = 'Hole,Par,Yardage,Handicap,Score,Putts,Penalties,Fairway Hit,GIR,Sand Save,Up and Down,Notes\n';
+            currentRound.holes.forEach(hole => {
+                csv += `${hole.number},${hole.par},${hole.yardage},${hole.handicap},${hole.score},${hole.putts},${hole.penalties},"${hole.fairwayHit}","${hole.gir}","${hole.sandSave}","${hole.upAndDown}","${hole.notes}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `golf-round-${currentRound.date || 'today'}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function viewStats() {
+            const statsSection = document.getElementById('statsDashboard');
+            const statsContent = document.getElementById('statsContent');
+            
+            if (allRounds.length === 0) {
+                statsContent.innerHTML = '<p class="text-gray-500">No completed rounds found.</p>';
+            } else {
+                // Calculate statistics
+                let totalRounds = allRounds.length;
+                let totalHoles = 0;
+                let totalScore = 0;
+                let totalPar = 0;
+                let totalPutts = 0;
+                let fairwaysHit = 0;
+                let fairwaysTotal = 0;
+                let greensHit = 0;
+                let greensTotal = 0;
+
+                allRounds.forEach(round => {
+                    round.holes.forEach(hole => {
+                        totalHoles++;
+                        totalScore += hole.score;
+                        totalPar += hole.par;
+                        totalPutts += hole.putts;
+                        
+                        if (hole.fairwayHit === 'hit') fairwaysHit++;
+                        if (hole.fairwayHit !== '' && hole.fairwayHit !== 'na') fairwaysTotal++;
+                        
+                        if (hole.gir === 'yes') greensHit++;
+                        if (hole.gir !== '') greensTotal++;
+                    });
+                });
+
+                const avgScore = (totalScore / totalRounds).toFixed(1);
+                const avgPutts = (totalPutts / totalHoles).toFixed(1);
+                const fairwayPercentage = fairwaysTotal > 0 ? ((fairwaysHit / fairwaysTotal) * 100).toFixed(1) : 0;
+                const girPercentage = greensTotal > 0 ? ((greensHit / greensTotal) * 100).toFixed(1) : 0;
+
+                statsContent.innerHTML = `
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-green-600">${totalRounds}</div>
+                            <div class="text-gray-600">Total Rounds</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-blue-600">${avgScore}</div>
+                            <div class="text-gray-600">Average Score</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-purple-600">${avgPutts}</div>
+                            <div class="text-gray-600">Average Putts/Hole</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-orange-600">${fairwayPercentage}%</div>
+                            <div class="text-gray-600">Fairway Hit %</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-red-600">${girPercentage}%</div>
+                            <div class="text-gray-600">Greens in Regulation %</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-3xl font-bold text-indigo-600">${totalHoles}</div>
+                            <div class="text-gray-600">Total Holes Played</div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button onclick="exportAllStats()" class="golf-water text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">
+                            <i class="fas fa-download mr-2"></i>Export All Statistics
+                        </button>
+                    </div>
+                `;
+            }
+            
+            statsSection.classList.toggle('hidden');
+        }
+
+        function exportAllStats() {
+            let csv = 'Course,Date,Round Score,Holes Played,Average Score,Putts per Hole,Fairway %,GIR %\n';
+            
+            allRounds.forEach(round => {
+                let totalScore = 0;
+                let totalPar = 0;
+                let totalPutts = 0;
+                let fairwaysHit = 0;
+                let fairwaysTotal = 0;
+                let greensHit = 0;
+                let greensTotal = 0;
+
+                round.holes.forEach(hole => {
+                    totalScore += hole.score;
+                    totalPar += hole.par;
+                    totalPutts += hole.putts;
+                    
+                    if (hole.fairwayHit === 'hit') fairwaysHit++;
+                    if (hole.fairwayHit !== '' && hole.fairwayHit !== 'na') fairwaysTotal++;
+                    
+                    if (hole.gir === 'yes') greensHit++;
+                    if (hole.gir !== '') greensTotal++;
+                });
+
+                const avgScore = (totalScore / round.holes.length).toFixed(1);
+                const avgPutts = (totalPutts / round.holes.length).toFixed(1);
+                const fairwayPercentage = fairwaysTotal > 0 ? ((fairwaysHit / fairwaysTotal) * 100).toFixed(1) : 0;
+                const girPercentage = greensTotal > 0 ? ((greensHit / greensTotal) * 100).toFixed(1) : 0;
+
+                csv += `"${round.course}",${round.date},${totalScore},${round.holes.length},${avgScore},${avgPutts},${fairwayPercentage}%,${girPercentage}%\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `golf-statistics-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function saveCurrentRound() {
+            localStorage.setItem('currentRound', JSON.stringify(currentRound));
+        }
+
+        function loadCurrentRound() {
+            const saved = localStorage.getItem('currentRound');
+            if (saved) {
+                currentRound = JSON.parse(saved);
+                document.getElementById('courseName').value = currentRound.course || '';
+                document.getElementById('roundDate').value = currentRound.date || '';
+                document.getElementById('teeBox').value = currentRound.teeBox || '';
+                updateHolesList();
+            }
+        }
+    </script>
+</body>
+</html>
